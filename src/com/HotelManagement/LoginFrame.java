@@ -31,89 +31,81 @@ public class LoginFrame extends JFrame {
     public LoginFrame() {
 
         setTitle("Hotel Management System - Login");
-
         setExtendedState(JFrame.MAXIMIZED_BOTH);
-
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
         setLayout(new BorderLayout());
 
-        // ================= LEFT SIDE =================
+        JPanel leftPanel =
+                new JPanel(new BorderLayout());
 
-        JPanel leftPanel = new JPanel(new BorderLayout());
+        leftPanel.setBackground(
+                new Color(35, 47, 62));
 
-        leftPanel.setBackground(new Color(35, 47, 62));
-
-        JLabel hotelLabel = new JLabel(
-                "HOTEL",
-                SwingConstants.CENTER
-        );
+        JLabel hotelLabel =
+                new JLabel(
+                        "HOTEL",
+                        SwingConstants.CENTER);
 
         hotelLabel.setForeground(Color.WHITE);
 
         hotelLabel.setFont(
-                new Font("Segoe UI", Font.BOLD, 50)
-        );
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        50));
 
-        JLabel managementLabel = new JLabel(
-                "MANAGEMENT SYSTEM",
-                SwingConstants.CENTER
-        );
+        JLabel managementLabel =
+                new JLabel(
+                        "MANAGEMENT SYSTEM",
+                        SwingConstants.CENTER);
 
-        managementLabel.setForeground(Color.WHITE);
+        managementLabel.setForeground(
+                Color.WHITE);
 
         managementLabel.setFont(
-                new Font("Segoe UI", Font.PLAIN, 25)
-        );
+                new Font(
+                        "Segoe UI",
+                        Font.PLAIN,
+                        25));
 
-        JPanel titlePanel = new JPanel(
-                new BorderLayout()
-        );
+        JPanel titlePanel =
+                new JPanel(new BorderLayout());
 
         titlePanel.setOpaque(false);
 
         titlePanel.add(
                 hotelLabel,
-                BorderLayout.CENTER
-        );
+                BorderLayout.CENTER);
 
         titlePanel.add(
                 managementLabel,
-                BorderLayout.SOUTH
-        );
+                BorderLayout.SOUTH);
 
         leftPanel.add(
                 titlePanel,
-                BorderLayout.CENTER
-        );
+                BorderLayout.CENTER);
 
-        // ================= RIGHT SIDE =================
-
-        JPanel rightPanel = new JPanel(
-                new GridBagLayout()
-        );
+        JPanel rightPanel =
+                new JPanel(new GridBagLayout());
 
         rightPanel.setBackground(
-                new Color(245, 247, 250)
-        );
+                new Color(245, 247, 250));
 
-        JPanel loginCard = new JPanel(
-                new GridBagLayout()
-        );
+        JPanel loginCard =
+                new JPanel(new GridBagLayout());
 
-        loginCard.setBackground(Color.WHITE);
+        loginCard.setBackground(
+                Color.WHITE);
 
         loginCard.setBorder(
                 BorderFactory.createCompoundBorder(
                         BorderFactory.createLineBorder(
-                                new Color(210, 215, 220)
-                        ),
+                                new Color(210, 215, 220)),
                         BorderFactory.createEmptyBorder(
                                 40,
                                 50,
                                 40,
-                                50
-                        )
+                                50)
                 )
         );
 
@@ -126,24 +118,19 @@ public class LoginFrame extends JFrame {
         gbc.fill =
                 GridBagConstraints.HORIZONTAL;
 
-        // ================= TITLE =================
-
-        JLabel loginTitle = new JLabel(
-                "Employee Login",
-                SwingConstants.CENTER
-        );
+        JLabel loginTitle =
+                new JLabel(
+                        "Employee Login",
+                        SwingConstants.CENTER);
 
         loginTitle.setFont(
                 new Font(
                         "Segoe UI",
                         Font.BOLD,
-                        28
-                )
-        );
+                        28));
 
         loginTitle.setForeground(
-                new Color(35, 47, 62)
-        );
+                new Color(35, 47, 62));
 
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -151,10 +138,7 @@ public class LoginFrame extends JFrame {
 
         loginCard.add(
                 loginTitle,
-                gbc
-        );
-
-        // ================= USERNAME =================
+                gbc);
 
         JLabel usernameLabel =
                 new JLabel("Username");
@@ -163,9 +147,7 @@ public class LoginFrame extends JFrame {
                 new Font(
                         "Segoe UI",
                         Font.BOLD,
-                        15
-                )
-        );
+                        15));
 
         gbc.gridx = 0;
         gbc.gridy = 1;
@@ -173,8 +155,7 @@ public class LoginFrame extends JFrame {
 
         loginCard.add(
                 usernameLabel,
-                gbc
-        );
+                gbc);
 
         usernameField =
                 new JTextField();
@@ -183,23 +164,17 @@ public class LoginFrame extends JFrame {
                 new Font(
                         "Segoe UI",
                         Font.PLAIN,
-                        16
-                )
-        );
+                        16));
 
         usernameField.setPreferredSize(
-                new Dimension(280, 40)
-        );
+                new Dimension(280, 40));
 
         gbc.gridx = 1;
         gbc.gridy = 1;
 
         loginCard.add(
                 usernameField,
-                gbc
-        );
-
-        // ================= PASSWORD =================
+                gbc);
 
         JLabel passwordLabel =
                 new JLabel("Password");
@@ -208,17 +183,14 @@ public class LoginFrame extends JFrame {
                 new Font(
                         "Segoe UI",
                         Font.BOLD,
-                        15
-                )
-        );
+                        15));
 
         gbc.gridx = 0;
         gbc.gridy = 2;
 
         loginCard.add(
                 passwordLabel,
-                gbc
-        );
+                gbc);
 
         passwordField =
                 new JPasswordField();
@@ -227,23 +199,17 @@ public class LoginFrame extends JFrame {
                 new Font(
                         "Segoe UI",
                         Font.PLAIN,
-                        16
-                )
-        );
+                        16));
 
         passwordField.setPreferredSize(
-                new Dimension(280, 40)
-        );
+                new Dimension(280, 40));
 
         gbc.gridx = 1;
         gbc.gridy = 2;
 
         loginCard.add(
                 passwordField,
-                gbc
-        );
-
-        // ================= LOGIN BUTTON =================
+                gbc);
 
         JButton loginButton =
                 new JButton("LOGIN");
@@ -252,21 +218,18 @@ public class LoginFrame extends JFrame {
                 new Font(
                         "Segoe UI",
                         Font.BOLD,
-                        16
-                )
-        );
+                        16));
 
-        loginButton.setForeground(Color.WHITE);
+        loginButton.setForeground(
+                Color.WHITE);
 
         loginButton.setBackground(
-                new Color(35, 47, 62)
-        );
+                new Color(35, 47, 62));
 
         loginButton.setFocusPainted(false);
 
         loginButton.setPreferredSize(
-                new Dimension(150, 45)
-        );
+                new Dimension(150, 45));
 
         gbc.gridx = 0;
         gbc.gridy = 3;
@@ -274,37 +237,26 @@ public class LoginFrame extends JFrame {
 
         loginCard.add(
                 loginButton,
-                gbc
-        );
+                gbc);
 
         rightPanel.add(loginCard);
 
         add(
                 leftPanel,
-                BorderLayout.WEST
-        );
+                BorderLayout.WEST);
 
         add(
                 rightPanel,
-                BorderLayout.CENTER
-        );
-
-        // ================= LOGIN ACTION =================
+                BorderLayout.CENTER);
 
         loginButton.addActionListener(
-                e -> login()
-        );
+                e -> login());
 
         passwordField.addActionListener(
-                e -> login()
-        );
+                e -> login());
 
         setVisible(true);
     }
-
-    // =====================================================
-    // LOGIN METHOD
-    // =====================================================
 
     private void login() {
 
@@ -313,8 +265,7 @@ public class LoginFrame extends JFrame {
 
         String password =
                 new String(
-                        passwordField.getPassword()
-                );
+                        passwordField.getPassword());
 
         if (username.isEmpty()) {
 
@@ -322,8 +273,7 @@ public class LoginFrame extends JFrame {
                     this,
                     "Please enter username.",
                     "Login",
-                    JOptionPane.WARNING_MESSAGE
-            );
+                    JOptionPane.WARNING_MESSAGE);
 
             usernameField.requestFocus();
 
@@ -336,8 +286,7 @@ public class LoginFrame extends JFrame {
                     this,
                     "Please enter password.",
                     "Login",
-                    JOptionPane.WARNING_MESSAGE
-            );
+                    JOptionPane.WARNING_MESSAGE);
 
             passwordField.requestFocus();
 
@@ -345,92 +294,68 @@ public class LoginFrame extends JFrame {
         }
 
         String sql =
-                "SELECT name, role "
-                + "FROM employee "
-                + "WHERE username = ? "
-                + "AND password = ?";
+                "SELECT name, role FROM employee "
+                + "WHERE username = ? AND password = ?";
+
+        Connection con = null;
 
         try {
 
-            Connection con =
-                    Conn1.mycon();
+            con = Conn1.mycon();
 
             if (con == null) {
 
                 JOptionPane.showMessageDialog(
                         this,
-                        "Database connection failed."
-                );
+                        "Database connection failed.",
+                        "Database Error",
+                        JOptionPane.ERROR_MESSAGE);
 
                 return;
             }
 
-            PreparedStatement ps =
-                    con.prepareStatement(sql);
+            try (PreparedStatement ps =
+                         con.prepareStatement(sql)) {
 
-            ps.setString(1, username);
+                ps.setString(
+                        1,
+                        username);
 
-            ps.setString(2, password);
+                ps.setString(
+                        2,
+                        password);
 
-            ResultSet rs =
-                    ps.executeQuery();
+                try (ResultSet rs =
+                             ps.executeQuery()) {
 
-            if (rs.next()) {
+                    if (rs.next()) {
 
-                String name =
-                        rs.getString("name");
+                        String name =
+                                rs.getString("name");
 
-                String role =
-                        rs.getString("role");
+                        String role =
+                                rs.getString("role");
 
-                System.out.println(
-                        "Login successful"
-                );
+                        dispose();
 
-                System.out.println(
-                        "Name = " + name
-                );
+                        new DashboardFrame(
+                                name,
+                                role,
+                                username);
 
-                System.out.println(
-                        "Role = " + role
-                );
+                    } else {
 
-                System.out.println(
-                        "Username = " + username
-                );
+                        JOptionPane.showMessageDialog(
+                                this,
+                                "Invalid username or password.",
+                                "Login Failed",
+                                JOptionPane.ERROR_MESSAGE);
 
-                rs.close();
+                        passwordField.setText("");
 
-                ps.close();
-
-                con.close();
-
-                dispose();
-
-                new DashboardFrame(
-                        name,
-                        role,
-                        username
-                );
-
-            } else {
-
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Invalid username or password.",
-                        "Login Failed",
-                        JOptionPane.ERROR_MESSAGE
-                );
-
-                passwordField.setText("");
-
-                passwordField.requestFocus();
-
-                rs.close();
-
-                ps.close();
-
-                con.close();
+                        passwordField.requestFocus();
+                    }
+                }
             }
 
         } catch (Exception ex) {
@@ -442,14 +367,21 @@ public class LoginFrame extends JFrame {
                     "Login Error:\n"
                     + ex.getMessage(),
                     "Database Error",
-                    JOptionPane.ERROR_MESSAGE
-            );
+                    JOptionPane.ERROR_MESSAGE);
+
+        } finally {
+
+            try {
+
+                if (con != null) {
+                    con.close();
+                }
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
     }
-
-    // =====================================================
-    // MAIN METHOD
-    // =====================================================
 
     public static void main(String[] args) {
 

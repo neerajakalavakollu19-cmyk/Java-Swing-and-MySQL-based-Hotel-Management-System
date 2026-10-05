@@ -1,75 +1,100 @@
 package com.HotelManagement;
 
-import com.dynamicconn.Conn1;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import java.awt.*;
-import java.sql.*;
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+
+import com.dynamicconn.Conn1;
 
 public class BillPayment extends JFrame {
 
     private JTextField customerIdField;
     private JTextField customerNameField;
-    private JTextField phoneField;
-
     private JTextField bookingIdField;
     private JTextField roomIdField;
-    private JTextField roomNumberField;
-    private JTextField roomTypeField;
-    private JTextField priceField;
-    private JTextField daysField;
-
     private JTextField roomAmountField;
     private JTextField serviceAmountField;
     private JTextField discountField;
     private JTextField totalAmountField;
 
     private JComboBox<String> paymentModeBox;
+    private JComboBox<String> paymentStatusBox;
 
     public BillPayment() {
-
-        setTitle("Hotel Management System - Bill & Payment");
+        setTitle("Bill & Payment");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setMinimumSize(new Dimension(1000, 650));
 
-        JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.setBackground(new Color(245, 247, 250));
+        JPanel mainPanel = new JPanel(new BorderLayout(20, 20));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(30, 50, 30, 50));
 
-        // ================= HEADER =================
-
-        JPanel header = new JPanel(new BorderLayout());
-        header.setBackground(new Color(32, 55, 90));
-        header.setBorder(new EmptyBorder(20, 30, 20, 30));
-
-        JLabel title = new JLabel("BILL & PAYMENT");
-        title.setFont(new Font("Segoe UI", Font.BOLD, 28));
-        title.setForeground(Color.WHITE);
+        JLabel title = new JLabel("BILL & PAYMENT", SwingConstants.CENTER);
+        title.setFont(new Font("Arial", Font.BOLD, 30));
 
         JLabel subtitle = new JLabel(
-                "Enter booking details and complete customer payment"
+                "Hotel Booking Billing and Payment",
+                SwingConstants.CENTER
         );
-        subtitle.setFont(new Font("Segoe UI", Font.PLAIN, 15));
-        subtitle.setForeground(Color.WHITE);
+        subtitle.setFont(new Font("Arial", Font.PLAIN, 16));
 
-        JPanel titlePanel = new JPanel();
-        titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.Y_AXIS));
-        titlePanel.setOpaque(false);
+        JPanel header = new JPanel(new BorderLayout(5, 5));
+        header.add(title, BorderLayout.NORTH);
+        header.add(subtitle, BorderLayout.CENTER);
 
-        titlePanel.add(title);
-        titlePanel.add(Box.createVerticalStrut(5));
-        titlePanel.add(subtitle);
+        mainPanel.add(header, BorderLayout.NORTH);
 
-        header.add(titlePanel, BorderLayout.WEST);
+        JPanel formPanel = new JPanel(new GridBagLayout());
+        formPanel.setBorder(
+                BorderFactory.createEmptyBorder(20, 100, 20, 100)
+        );
 
-        // ================= CENTER =================
+        customerIdField = createField();
+        customerNameField = createField();
+        bookingIdField = createField();
+        roomIdField = createField();
+        roomAmountField = createField();
+        serviceAmountField = createField();
+        discountField = createField();
+        totalAmountField = createField();
 
-        JPanel centerPanel = new JPanel(new GridBagLayout());
-        centerPanel.setBackground(new Color(245, 247, 250));
-        centerPanel.setBorder(
-                new EmptyBorder(30, 50, 20, 50)
+        customerNameField.setEditable(false);
+        roomIdField.setEditable(false);
+        roomAmountField.setEditable(false);
+        totalAmountField.setEditable(false);
+
+        paymentModeBox = new JComboBox<>(
+                new String[] {
+                        "Cash",
+                        "Card",
+                        "UPI",
+                        "Net Banking"
+                }
+        );
+
+        paymentStatusBox = new JComboBox<>(
+                new String[] {
+                        "Paid",
+                        "Pending"
+                }
         );
 
         GridBagConstraints gbc = new GridBagConstraints();
@@ -77,1278 +102,515 @@ public class BillPayment extends JFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1;
 
-        // ================= CUSTOMER CARD =================
+        addRow(formPanel, gbc, 0, "Customer ID", customerIdField);
+        addRow(formPanel, gbc, 1, "Customer Name", customerNameField);
+        addRow(formPanel, gbc, 2, "Booking ID", bookingIdField);
+        addRow(formPanel, gbc, 3, "Room ID", roomIdField);
+        addRow(formPanel, gbc, 4, "Room Amount", roomAmountField);
+        addRow(formPanel, gbc, 5, "Service Amount", serviceAmountField);
+        addRow(formPanel, gbc, 6, "Discount", discountField);
+        addRow(formPanel, gbc, 7, "Total Amount", totalAmountField);
+        addRow(formPanel, gbc, 8, "Payment Mode", paymentModeBox);
+        addRow(formPanel, gbc, 9, "Payment Status", paymentStatusBox);
 
-        JPanel customerCard = createCard();
-        customerCard.setLayout(new GridBagLayout());
+        mainPanel.add(formPanel, BorderLayout.CENTER);
 
-        GridBagConstraints c = new GridBagConstraints();
-        c.insets = new Insets(8, 8, 8, 8);
-        c.fill = GridBagConstraints.HORIZONTAL;
+        JButton loadCustomerButton = new JButton("Load Customer");
+        JButton loadBookingButton = new JButton("Load Booking");
+        JButton calculateButton = new JButton("Calculate");
+        JButton payButton = new JButton("Complete Payment");
+        JButton clearButton = new JButton("Clear");
+        JButton backButton = new JButton("Back");
 
-        JLabel customerTitle =
-                createSectionTitle("Customer Details");
-
-        c.gridx = 0;
-        c.gridy = 0;
-        c.gridwidth = 2;
-
-        customerCard.add(customerTitle, c);
-
-        c.gridwidth = 1;
-
-        c.gridx = 0;
-        c.gridy = 1;
-
-        customerCard.add(
-                createLabel("Customer ID"),
-                c
+        JPanel buttonPanel = new JPanel(
+                new FlowLayout(FlowLayout.CENTER, 15, 10)
         );
 
-        customerIdField = createField();
-
-        c.gridx = 1;
-
-        customerCard.add(
-                customerIdField,
-                c
-        );
-
-        c.gridx = 0;
-        c.gridy = 2;
-
-        customerCard.add(
-                createLabel("Customer Name"),
-                c
-        );
-
-        customerNameField = createField();
-        customerNameField.setEditable(false);
-
-        c.gridx = 1;
-
-        customerCard.add(
-                customerNameField,
-                c
-        );
-
-        c.gridx = 0;
-        c.gridy = 3;
-
-        customerCard.add(
-                createLabel("Phone"),
-                c
-        );
-
-        phoneField = createField();
-        phoneField.setEditable(false);
-
-        c.gridx = 1;
-
-        customerCard.add(
-                phoneField,
-                c
-        );
-
-        JButton loadCustomerButton =
-                createButton("Load Customer");
-
-        c.gridx = 0;
-        c.gridy = 4;
-        c.gridwidth = 2;
-
-        customerCard.add(
-                loadCustomerButton,
-                c
-        );
-
-        loadCustomerButton.addActionListener(
-                e -> loadCustomer()
-        );
-
-        // ================= BOOKING CARD =================
-
-        JPanel bookingCard = createCard();
-        bookingCard.setLayout(new GridBagLayout());
-
-        GridBagConstraints b = new GridBagConstraints();
-        b.insets = new Insets(8, 8, 8, 8);
-        b.fill = GridBagConstraints.HORIZONTAL;
-
-        JLabel bookingTitle =
-                createSectionTitle("Booking & Room Details");
-
-        b.gridx = 0;
-        b.gridy = 0;
-        b.gridwidth = 2;
-
-        bookingCard.add(
-                bookingTitle,
-                b
-        );
-
-        b.gridwidth = 1;
-
-        // Booking ID
-
-        b.gridx = 0;
-        b.gridy = 1;
-
-        bookingCard.add(
-                createLabel("Booking ID"),
-                b
-        );
-
-        bookingIdField = createField();
-
-        b.gridx = 1;
-
-        bookingCard.add(
-                bookingIdField,
-                b
-        );
-
-        // Load Booking button
-
-        JButton loadBookingButton =
-                createButton("Load Booking");
-
-        b.gridx = 0;
-        b.gridy = 2;
-        b.gridwidth = 2;
-
-        bookingCard.add(
-                loadBookingButton,
-                b
-        );
-
-        loadBookingButton.addActionListener(
-                e -> loadBooking()
-        );
-
-        b.gridwidth = 1;
-
-        // Room ID
-
-        b.gridx = 0;
-        b.gridy = 3;
-
-        bookingCard.add(
-                createLabel("Room ID"),
-                b
-        );
-
-        roomIdField = createField();
-        roomIdField.setEditable(false);
-
-        b.gridx = 1;
-
-        bookingCard.add(
-                roomIdField,
-                b
-        );
-
-        // Room Number
-
-        b.gridx = 0;
-        b.gridy = 4;
-
-        bookingCard.add(
-                createLabel("Room Number"),
-                b
-        );
-
-        roomNumberField = createField();
-        roomNumberField.setEditable(false);
-
-        b.gridx = 1;
-
-        bookingCard.add(
-                roomNumberField,
-                b
-        );
-
-        // Room Type
-
-        b.gridx = 0;
-        b.gridy = 5;
-
-        bookingCard.add(
-                createLabel("Room Type"),
-                b
-        );
-
-        roomTypeField = createField();
-        roomTypeField.setEditable(false);
-
-        b.gridx = 1;
-
-        bookingCard.add(
-                roomTypeField,
-                b
-        );
-
-        // Price
-
-        b.gridx = 0;
-        b.gridy = 6;
-
-        bookingCard.add(
-                createLabel("Price / Day"),
-                b
-        );
-
-        priceField = createField();
-        priceField.setEditable(false);
-
-        b.gridx = 1;
-
-        bookingCard.add(
-                priceField,
-                b
-        );
-
-        // Stay Days
-
-        b.gridx = 0;
-        b.gridy = 7;
-
-        bookingCard.add(
-                createLabel("Stay Days"),
-                b
-        );
-
-        daysField = createField();
-        daysField.setEditable(false);
-
-        b.gridx = 1;
-
-        bookingCard.add(
-                daysField,
-                b
-        );
-
-        // ================= BILL CARD =================
-
-        JPanel billCard = createCard();
-        billCard.setLayout(new GridBagLayout());
-
-        GridBagConstraints d = new GridBagConstraints();
-        d.insets = new Insets(8, 8, 8, 8);
-        d.fill = GridBagConstraints.HORIZONTAL;
-
-        JLabel billTitle =
-                createSectionTitle("Bill & Payment Details");
-
-        d.gridx = 0;
-        d.gridy = 0;
-        d.gridwidth = 2;
-
-        billCard.add(
-                billTitle,
-                d
-        );
-
-        d.gridwidth = 1;
-
-        // Room Amount
-
-        d.gridx = 0;
-        d.gridy = 1;
-
-        billCard.add(
-                createLabel("Room Amount"),
-                d
-        );
-
-        roomAmountField = createField();
-        roomAmountField.setEditable(false);
-
-        d.gridx = 1;
-
-        billCard.add(
-                roomAmountField,
-                d
-        );
-
-        // Service Amount
-
-        d.gridx = 0;
-        d.gridy = 2;
-
-        billCard.add(
-                createLabel("Service Amount"),
-                d
-        );
-
-        serviceAmountField = createField();
-
-        d.gridx = 1;
-
-        billCard.add(
-                serviceAmountField,
-                d
-        );
-
-        // Discount
-
-        d.gridx = 0;
-        d.gridy = 3;
-
-        billCard.add(
-                createLabel("Discount"),
-                d
-        );
-
-        discountField = createField();
-
-        d.gridx = 1;
-
-        billCard.add(
-                discountField,
-                d
-        );
-
-        // Total
-
-        d.gridx = 0;
-        d.gridy = 4;
-
-        billCard.add(
-                createLabel("Total Amount"),
-                d
-        );
-
-        totalAmountField = createField();
-        totalAmountField.setEditable(false);
-
-        totalAmountField.setFont(
-                new Font("Segoe UI", Font.BOLD, 18)
-        );
-
-        d.gridx = 1;
-
-        billCard.add(
-                totalAmountField,
-                d
-        );
-
-        // Payment Mode
-
-        d.gridx = 0;
-        d.gridy = 5;
-
-        billCard.add(
-                createLabel("Payment Mode"),
-                d
-        );
-
-        paymentModeBox = new JComboBox<>();
-
-        paymentModeBox.addItem("Cash");
-        paymentModeBox.addItem("UPI");
-        paymentModeBox.addItem("Card");
-        paymentModeBox.addItem("Net Banking");
-
-        d.gridx = 1;
-
-        billCard.add(
-                paymentModeBox,
-                d
-        );
-
-        // ================= BUTTONS =================
-
-        JPanel buttonPanel =
-                new JPanel(
-                        new FlowLayout(
-                                FlowLayout.CENTER,
-                                15,
-                                10
-                        )
-                );
-
-        buttonPanel.setOpaque(false);
-
-        JButton calculateButton =
-                createButton("Calculate Bill");
-
-        JButton paymentButton =
-                createButton("Complete Payment");
-
-        JButton clearButton =
-                createButton("Clear");
-
-        JButton backButton =
-                createButton("Back");
-
+        buttonPanel.add(loadCustomerButton);
+        buttonPanel.add(loadBookingButton);
         buttonPanel.add(calculateButton);
-        buttonPanel.add(paymentButton);
+        buttonPanel.add(payButton);
         buttonPanel.add(clearButton);
         buttonPanel.add(backButton);
 
-        calculateButton.addActionListener(
-                e -> calculateBill()
-        );
-
-        paymentButton.addActionListener(
-                e -> completePayment()
-        );
-
-        clearButton.addActionListener(
-                e -> clearFields()
-        );
-
-        backButton.addActionListener(
-                e -> dispose()
-        );
-
-        // ================= ADD CARDS =================
-
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.weighty = 1;
-
-        centerPanel.add(
-                customerCard,
-                gbc
-        );
-
-        gbc.gridx = 1;
-
-        centerPanel.add(
-                bookingCard,
-                gbc
-        );
-
-        gbc.gridx = 2;
-
-        centerPanel.add(
-                billCard,
-                gbc
-        );
-
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.gridwidth = 3;
-        gbc.weighty = 0;
-
-        centerPanel.add(
-                buttonPanel,
-                gbc
-        );
-
-        mainPanel.add(
-                header,
-                BorderLayout.NORTH
-        );
-
-        mainPanel.add(
-                centerPanel,
-                BorderLayout.CENTER
-        );
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         add(mainPanel);
 
+        loadCustomerButton.addActionListener(e -> loadCustomer());
+        loadBookingButton.addActionListener(e -> loadBooking());
+        calculateButton.addActionListener(e -> calculateTotal());
+        payButton.addActionListener(e -> completePayment());
+        clearButton.addActionListener(e -> clearFields());
+        backButton.addActionListener(e -> dispose());
+
+        setLocationRelativeTo(null);
         setVisible(true);
     }
 
-    // =========================================================
-    // LOAD CUSTOMER
-    // =========================================================
+    private JTextField createField() {
+        JTextField field = new JTextField();
+        field.setPreferredSize(new Dimension(250, 35));
+        field.setFont(new Font("Arial", Font.PLAIN, 15));
+        return field;
+    }
+
+    private void addRow(
+            JPanel panel,
+            GridBagConstraints gbc,
+            int row,
+            String label,
+            java.awt.Component component
+    ) {
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        gbc.weightx = 0.3;
+
+        JLabel jLabel = new JLabel(label);
+        jLabel.setFont(new Font("Arial", Font.BOLD, 15));
+        panel.add(jLabel, gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 0.7;
+        panel.add(component, gbc);
+    }
 
     private void loadCustomer() {
+        String customerIdText = customerIdField.getText().trim();
 
-        String customerText =
-                customerIdField.getText().trim();
-
-        if (customerText.isEmpty()) {
-
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Please enter Customer ID."
-            );
-
+        if (customerIdText.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Enter Customer ID");
             return;
         }
 
         try {
+            int customerId = Integer.parseInt(customerIdText);
 
-            int customerId =
-                    Integer.parseInt(customerText);
+            Connection con = Conn1.mycon();
 
-            Connection con =
-                    Conn1.mycon();
-
-            String sql =
-                    "SELECT name, phone " +
-                    "FROM customer " +
-                    "WHERE customer_id = ?";
-
-            PreparedStatement ps =
-                    con.prepareStatement(sql);
-
-            ps.setInt(
-                    1,
-                    customerId
-            );
-
-            ResultSet rs =
-                    ps.executeQuery();
-
-            if (rs.next()) {
-
-                customerNameField.setText(
-                        rs.getString("name")
-                );
-
-                phoneField.setText(
-                        rs.getString("phone")
-                );
-
+            if (con == null) {
                 JOptionPane.showMessageDialog(
                         this,
-                        "Customer loaded successfully."
+                        "Database connection failed"
                 );
-
-            } else {
-
-                customerNameField.setText("");
-                phoneField.setText("");
-
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Customer ID not found."
-                );
+                return;
             }
 
-            rs.close();
-            ps.close();
+            String sql =
+                    "SELECT name FROM customer WHERE customer_id = ?";
+
+            try (PreparedStatement ps = con.prepareStatement(sql)) {
+
+                ps.setInt(1, customerId);
+
+                try (ResultSet rs = ps.executeQuery()) {
+
+                    if (rs.next()) {
+                        customerNameField.setText(
+                                rs.getString("name")
+                        );
+                    } else {
+                        customerNameField.setText("");
+                        JOptionPane.showMessageDialog(
+                                this,
+                                "Customer not found"
+                        );
+                    }
+                }
+            }
+
             con.close();
 
-        } catch (NumberFormatException ex) {
-
+        } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(
                     this,
-                    "Customer ID must be a number."
+                    "Customer ID must be a number"
             );
-
-        } catch (Exception ex) {
-
+        } catch (Exception e) {
             JOptionPane.showMessageDialog(
                     this,
-                    "Error loading customer:\n"
-                            + ex.getMessage()
+                    "Error: " + e.getMessage()
             );
-
-            ex.printStackTrace();
         }
     }
 
-    // =========================================================
-    // LOAD BOOKING
-    // =========================================================
-
     private void loadBooking() {
-
-        String customerText =
+        String customerIdText =
                 customerIdField.getText().trim();
 
-        String bookingText =
+        String bookingIdText =
                 bookingIdField.getText().trim();
 
-        if (customerText.isEmpty()) {
-
+        if (customerIdText.isEmpty()) {
             JOptionPane.showMessageDialog(
                     this,
-                    "Please enter Customer ID and load customer first."
+                    "Enter Customer ID"
             );
-
             return;
         }
 
-        if (bookingText.isEmpty()) {
-
+        if (bookingIdText.isEmpty()) {
             JOptionPane.showMessageDialog(
                     this,
-                    "Please enter Booking ID."
+                    "Enter Booking ID"
             );
-
             return;
         }
 
         try {
-
             int customerId =
-                    Integer.parseInt(customerText);
+                    Integer.parseInt(customerIdText);
 
             int bookingId =
-                    Integer.parseInt(bookingText);
+                    Integer.parseInt(bookingIdText);
 
-            Connection con =
-                    Conn1.mycon();
+            Connection con = Conn1.mycon();
+
+            if (con == null) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Database connection failed"
+                );
+                return;
+            }
 
             String sql =
-                    "SELECT b.booking_id, " +
-                    "b.customer_id, " +
-                    "b.room_id, " +
-                    "b.check_in, " +
-                    "b.status, " +
-                    "r.room_number, " +
-                    "r.room_type, " +
-                    "r.price_per_day " +
+                    "SELECT b.room_id, r.price_per_day, " +
+                    "b.check_in, b.check_out " +
                     "FROM booking b " +
-                    "INNER JOIN room r " +
-                    "ON b.room_id = r.room_id " +
+                    "JOIN room r ON b.room_id = r.room_id " +
                     "WHERE b.booking_id = ? " +
                     "AND b.customer_id = ?";
 
-            PreparedStatement ps =
-                    con.prepareStatement(sql);
+            try (PreparedStatement ps =
+                         con.prepareStatement(sql)) {
 
-            ps.setInt(
-                    1,
-                    bookingId
-            );
+                ps.setInt(1, bookingId);
+                ps.setInt(2, customerId);
 
-            ps.setInt(
-                    2,
-                    customerId
-            );
+                try (ResultSet rs = ps.executeQuery()) {
 
-            ResultSet rs =
-                    ps.executeQuery();
+                    if (rs.next()) {
 
-            if (!rs.next()) {
+                        int roomId =
+                                rs.getInt("room_id");
 
-                clearBookingFields();
+                        double pricePerDay =
+                                rs.getDouble("price_per_day");
 
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Booking ID does not belong to this customer."
-                );
+                        roomIdField.setText(
+                                String.valueOf(roomId)
+                        );
 
-                rs.close();
-                ps.close();
-                con.close();
+                        long days = 1;
 
-                return;
+                        if (rs.getDate("check_in") != null
+                                && rs.getDate("check_out") != null) {
+
+                            long difference =
+                                    rs.getDate("check_out").getTime()
+                                    - rs.getDate("check_in").getTime();
+
+                            days = difference /
+                                    (1000 * 60 * 60 * 24);
+
+                            if (days <= 0) {
+                                days = 1;
+                            }
+                        }
+
+                        double roomAmount =
+                                pricePerDay * days;
+
+                        roomAmountField.setText(
+                                String.format(
+                                        "%.2f",
+                                        roomAmount
+                                )
+                        );
+
+                    } else {
+                        JOptionPane.showMessageDialog(
+                                this,
+                                "Booking not found for this Customer ID"
+                        );
+                    }
+                }
             }
 
-            String status =
-                    rs.getString("status");
-
-            if (!"Booked".equalsIgnoreCase(status)) {
-
-                clearBookingFields();
-
-                JOptionPane.showMessageDialog(
-                        this,
-                        "This booking is not currently Booked.\n"
-                                + "Current status: "
-                                + status
-                );
-
-                rs.close();
-                ps.close();
-                con.close();
-
-                return;
-            }
-
-            roomIdField.setText(
-                    String.valueOf(
-                            rs.getInt("room_id")
-                    )
-            );
-
-            roomNumberField.setText(
-                    rs.getString("room_number")
-            );
-
-            roomTypeField.setText(
-                    rs.getString("room_type")
-            );
-
-            double price =
-                    rs.getDouble("price_per_day");
-
-            priceField.setText(
-                    String.valueOf(price)
-            );
-
-            Date checkIn =
-                    rs.getDate("check_in");
-
-            LocalDate checkInDate =
-                    checkIn.toLocalDate();
-
-            LocalDate today =
-                    LocalDate.now();
-
-            long days =
-                    ChronoUnit.DAYS.between(
-                            checkInDate,
-                            today
-                    );
-
-            if (days <= 0) {
-                days = 1;
-            }
-
-            daysField.setText(
-                    String.valueOf(days)
-            );
-
-            double roomAmount =
-                    price * days;
-
-            roomAmountField.setText(
-                    String.format(
-                            "%.2f",
-                            roomAmount
-                    )
-            );
-
-            rs.close();
-            ps.close();
             con.close();
 
+        } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(
                     this,
-                    "Booking loaded successfully."
+                    "Customer ID and Booking ID must be numbers"
             );
-
-        } catch (NumberFormatException ex) {
-
+        } catch (Exception e) {
             JOptionPane.showMessageDialog(
                     this,
-                    "Customer ID and Booking ID must be numbers."
+                    "Error: " + e.getMessage()
             );
-
-        } catch (Exception ex) {
-
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Error loading booking:\n"
-                            + ex.getMessage()
-            );
-
-            ex.printStackTrace();
         }
     }
 
-    // =========================================================
-    // CALCULATE BILL
-    // =========================================================
-
-    private void calculateBill() {
-
-        if (bookingIdField.getText().trim().isEmpty()
-                || roomAmountField.getText().trim().isEmpty()) {
-
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Please enter Booking ID and load booking first."
-            );
-
-            return;
-        }
+    private void calculateTotal() {
 
         try {
 
             double roomAmount =
-                    Double.parseDouble(
-                            roomAmountField.getText()
-                    );
+                    getAmount(roomAmountField);
 
-            double serviceAmount = 0;
+            double serviceAmount =
+                    getAmount(serviceAmountField);
 
-            double discount = 0;
+            double discount =
+                    getAmount(discountField);
 
-            if (!serviceAmountField
-                    .getText()
-                    .trim()
-                    .isEmpty()) {
-
-                serviceAmount =
-                        Double.parseDouble(
-                                serviceAmountField
-                                        .getText()
-                                        .trim()
-                        );
-            }
-
-            if (!discountField
-                    .getText()
-                    .trim()
-                    .isEmpty()) {
-
-                discount =
-                        Double.parseDouble(
-                                discountField
-                                        .getText()
-                                        .trim()
-                        );
-            }
-
-            if (serviceAmount < 0) {
-
+            if (serviceAmount < 0 || discount < 0) {
                 JOptionPane.showMessageDialog(
                         this,
-                        "Service amount cannot be negative."
+                        "Service amount and discount cannot be negative"
                 );
-
                 return;
             }
 
-            if (discount < 0) {
+            double total =
+                    roomAmount + serviceAmount - discount;
 
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Discount cannot be negative."
-                );
-
-                return;
-            }
-
-            double totalAmount =
-                    roomAmount
-                            + serviceAmount
-                            - discount;
-
-            if (totalAmount < 0) {
-                totalAmount = 0;
+            if (total < 0) {
+                total = 0;
             }
 
             totalAmountField.setText(
-                    String.format(
-                            "%.2f",
-                            totalAmount
-                    )
+                    String.format("%.2f", total)
             );
 
-        } catch (NumberFormatException ex) {
+        } catch (NumberFormatException e) {
 
             JOptionPane.showMessageDialog(
                     this,
-                    "Please enter valid numbers."
+                    "Enter valid numeric values"
             );
         }
     }
 
-    // =========================================================
-    // COMPLETE PAYMENT
-    // =========================================================
+    private double getAmount(JTextField field) {
+
+        String value = field.getText().trim();
+
+        if (value.isEmpty()) {
+            return 0;
+        }
+
+        return Double.parseDouble(value);
+    }
 
     private void completePayment() {
 
-        String bookingText =
+        String customerIdText =
+                customerIdField.getText().trim();
+
+        String bookingIdText =
                 bookingIdField.getText().trim();
 
-        if (bookingText.isEmpty()) {
+        String roomIdText =
+                roomIdField.getText().trim();
 
+        String totalText =
+                totalAmountField.getText().trim();
+
+        if (customerIdText.isEmpty()) {
             JOptionPane.showMessageDialog(
                     this,
-                    "Please enter Booking ID and load booking first."
+                    "Enter Customer ID"
             );
-
             return;
         }
 
-        if (totalAmountField
-                .getText()
-                .trim()
-                .isEmpty()) {
-
+        if (bookingIdText.isEmpty()) {
             JOptionPane.showMessageDialog(
                     this,
-                    "Please calculate the bill first."
+                    "Enter Booking ID"
             );
+            return;
+        }
 
+        if (roomIdText.isEmpty()) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Load booking details first"
+            );
+            return;
+        }
+
+        if (totalText.isEmpty()) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Calculate the total amount first"
+            );
             return;
         }
 
         try {
 
+            int customerId =
+                    Integer.parseInt(customerIdText);
+
             int bookingId =
-                    Integer.parseInt(bookingText);
+                    Integer.parseInt(bookingIdText);
+
+            int roomId =
+                    Integer.parseInt(roomIdText);
 
             double roomAmount =
-                    Double.parseDouble(
-                            roomAmountField.getText()
-                    );
+                    getAmount(roomAmountField);
 
-            double serviceAmount = 0;
+            double serviceAmount =
+                    getAmount(serviceAmountField);
 
-            double discount = 0;
-
-            if (!serviceAmountField
-                    .getText()
-                    .trim()
-                    .isEmpty()) {
-
-                serviceAmount =
-                        Double.parseDouble(
-                                serviceAmountField
-                                        .getText()
-                                        .trim()
-                        );
-            }
-
-            if (!discountField
-                    .getText()
-                    .trim()
-                    .isEmpty()) {
-
-                discount =
-                        Double.parseDouble(
-                                discountField
-                                        .getText()
-                                        .trim()
-                        );
-            }
+            double discount =
+                    getAmount(discountField);
 
             double totalAmount =
-                    Double.parseDouble(
-                            totalAmountField.getText()
-                    );
+                    getAmount(totalAmountField);
 
             String paymentMode =
                     paymentModeBox
                             .getSelectedItem()
                             .toString();
 
-            int choice =
-                    JOptionPane.showConfirmDialog(
-                            this,
-                            "Booking ID: "
-                                    + bookingId
-                                    + "\nRoom Amount: ₹"
-                                    + String.format(
-                                    "%.2f",
-                                    roomAmount
-                            )
-                                    + "\nService Amount: ₹"
-                                    + String.format(
-                                    "%.2f",
-                                    serviceAmount
-                            )
-                                    + "\nDiscount: ₹"
-                                    + String.format(
-                                    "%.2f",
-                                    discount
-                            )
-                                    + "\nTotal Amount: ₹"
-                                    + String.format(
-                                    "%.2f",
-                                    totalAmount
-                            )
-                                    + "\nPayment Mode: "
-                                    + paymentMode
-                                    + "\n\nComplete payment?",
-                            "Confirm Payment",
-                            JOptionPane.YES_NO_OPTION
-                    );
+            String paymentStatus =
+                    paymentStatusBox
+                            .getSelectedItem()
+                            .toString();
 
-            if (choice != JOptionPane.YES_OPTION) {
-                return;
-            }
+            Connection con = Conn1.mycon();
 
-            Connection con =
-                    Conn1.mycon();
-
-            String checkSql =
-                    "SELECT payment_id " +
-                    "FROM payment " +
-                    "WHERE booking_id = ? " +
-                    "AND payment_status = 'Paid'";
-
-            PreparedStatement checkPs =
-                    con.prepareStatement(checkSql);
-
-            checkPs.setInt(
-                    1,
-                    bookingId
-            );
-
-            ResultSet checkRs =
-                    checkPs.executeQuery();
-
-            if (checkRs.next()) {
-
+            if (con == null) {
                 JOptionPane.showMessageDialog(
                         this,
-                        "Payment already completed for this booking."
+                        "Database connection failed"
                 );
-
-                checkRs.close();
-                checkPs.close();
-                con.close();
-
                 return;
             }
 
-            checkRs.close();
-            checkPs.close();
+            String checkSql =
+                    "SELECT payment_id FROM payment " +
+                    "WHERE booking_id = ?";
+
+            try (PreparedStatement checkPs =
+                         con.prepareStatement(checkSql)) {
+
+                checkPs.setInt(1, bookingId);
+
+                try (ResultSet rs =
+                             checkPs.executeQuery()) {
+
+                    if (rs.next()) {
+
+                        JOptionPane.showMessageDialog(
+                                this,
+                                "Payment already exists for this Booking ID"
+                        );
+
+                        con.close();
+                        return;
+                    }
+                }
+            }
 
             String insertSql =
                     "INSERT INTO payment " +
                     "(booking_id, room_amount, service_amount, " +
-                    "discount, total_amount, payment_mode, payment_status) " +
+                    "discount, total_amount, payment_mode, " +
+                    "payment_status) " +
                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
-            PreparedStatement ps =
-                    con.prepareStatement(insertSql);
+            try (PreparedStatement ps =
+                         con.prepareStatement(insertSql)) {
 
-            ps.setInt(
-                    1,
-                    bookingId
-            );
+                ps.setInt(1, bookingId);
+                ps.setDouble(2, roomAmount);
+                ps.setDouble(3, serviceAmount);
+                ps.setDouble(4, discount);
+                ps.setDouble(5, totalAmount);
+                ps.setString(6, paymentMode);
+                ps.setString(7, paymentStatus);
 
-            ps.setDouble(
-                    2,
-                    roomAmount
-            );
+                int result =
+                        ps.executeUpdate();
 
-            ps.setDouble(
-                    3,
-                    serviceAmount
-            );
+                if (result > 0) {
 
-            ps.setDouble(
-                    4,
-                    discount
-            );
+                    String updateBooking =
+                            "UPDATE booking " +
+                            "SET status = 'Completed' " +
+                            "WHERE booking_id = ?";
 
-            ps.setDouble(
-                    5,
-                    totalAmount
-            );
+                    try (PreparedStatement bookingPs =
+                                 con.prepareStatement(
+                                         updateBooking)) {
 
-            ps.setString(
-                    6,
-                    paymentMode
-            );
+                        bookingPs.setInt(1, bookingId);
+                        bookingPs.executeUpdate();
+                    }
 
-            ps.setString(
-                    7,
-                    "Paid"
-            );
+                    String updateRoom =
+                            "UPDATE room " +
+                            "SET status = 'Available' " +
+                            "WHERE room_id = ?";
 
-            int rows =
-                    ps.executeUpdate();
+                    try (PreparedStatement roomPs =
+                                 con.prepareStatement(
+                                         updateRoom)) {
 
-            if (rows > 0) {
+                        roomPs.setInt(1, roomId);
+                        roomPs.executeUpdate();
+                    }
 
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Payment Completed Successfully!\n\n"
-                                + "Booking ID: "
-                                + bookingId
-                                + "\nTotal Amount: ₹"
-                                + String.format(
-                                "%.2f",
-                                totalAmount
-                        )
-                                + "\nPayment Mode: "
-                                + paymentMode
-                );
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "Payment completed successfully"
+                    );
 
-                clearFields();
+                    clearFields();
+                }
             }
 
-            ps.close();
             con.close();
 
-        } catch (NumberFormatException ex) {
+        } catch (NumberFormatException e) {
 
             JOptionPane.showMessageDialog(
                     this,
-                    "Please enter valid amount values."
+                    "Enter valid numeric values"
             );
 
-        } catch (Exception ex) {
+        } catch (Exception e) {
 
             JOptionPane.showMessageDialog(
                     this,
-                    "Payment failed:\n"
-                            + ex.getMessage()
+                    "Payment failed: " + e.getMessage()
             );
-
-            ex.printStackTrace();
         }
     }
-
-    // =========================================================
-    // CLEAR ALL
-    // =========================================================
 
     private void clearFields() {
 
         customerIdField.setText("");
         customerNameField.setText("");
-        phoneField.setText("");
-
         bookingIdField.setText("");
-        clearBookingFields();
-
+        roomIdField.setText("");
+        roomAmountField.setText("");
         serviceAmountField.setText("");
         discountField.setText("");
         totalAmountField.setText("");
 
         paymentModeBox.setSelectedIndex(0);
+        paymentStatusBox.setSelectedIndex(0);
     }
 
-    // =========================================================
-    // CLEAR BOOKING
-    // =========================================================
-
-    private void clearBookingFields() {
-
-        roomIdField.setText("");
-        roomNumberField.setText("");
-        roomTypeField.setText("");
-        priceField.setText("");
-        daysField.setText("");
-        roomAmountField.setText("");
-    }
-
-    // =========================================================
-    // CARD
-    // =========================================================
-
-    private JPanel createCard() {
-
-        JPanel panel = new JPanel();
-
-        panel.setBackground(Color.WHITE);
-
-        panel.setBorder(
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(
-                                new Color(220, 225, 230)
-                        ),
-                        new EmptyBorder(
-                                20,
-                                20,
-                                20,
-                                20
-                        )
-                )
-        );
-
-        return panel;
-    }
-
-    // =========================================================
-    // LABEL
-    // =========================================================
-
-    private JLabel createLabel(String text) {
-
-        JLabel label =
-                new JLabel(text);
-
-        label.setFont(
-                new Font(
-                        "Segoe UI",
-                        Font.PLAIN,
-                        14
-                )
-        );
-
-        return label;
-    }
-
-    // =========================================================
-    // SECTION TITLE
-    // =========================================================
-
-    private JLabel createSectionTitle(
-            String text) {
-
-        JLabel label =
-                new JLabel(text);
-
-        label.setFont(
-                new Font(
-                        "Segoe UI",
-                        Font.BOLD,
-                        20
-                )
-        );
-
-        label.setForeground(
-                new Color(32, 55, 90)
-        );
-
-        return label;
-    }
-
-    // =========================================================
-    // TEXT FIELD
-    // =========================================================
-
-    private JTextField createField() {
-
-        JTextField field =
-                new JTextField();
-
-        field.setPreferredSize(
-                new Dimension(
-                        220,
-                        38
-                )
-        );
-
-        field.setFont(
-                new Font(
-                        "Segoe UI",
-                        Font.PLAIN,
-                        14
-                )
-        );
-
-        return field;
-    }
-
-    // =========================================================
-    // BUTTON
-    // =========================================================
-
-    private JButton createButton(
-            String text) {
-
-        JButton button =
-                new JButton(text);
-
-        button.setFont(
-                new Font(
-                        "Segoe UI",
-                        Font.BOLD,
-                        14
-                )
-        );
-
-        button.setFocusPainted(false);
-
-        button.setPreferredSize(
-                new Dimension(
-                        170,
-                        42
-                )
-        );
-
-        return button;
-    }
-
-    // =========================================================
-    // MAIN
-    // =========================================================
-
-    public static void main(
-            String[] args) {
+    public static void main(String[] args) {
 
         SwingUtilities.invokeLater(
                 () -> new BillPayment()

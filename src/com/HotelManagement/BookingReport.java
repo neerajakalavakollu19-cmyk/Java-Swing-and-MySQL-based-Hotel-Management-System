@@ -20,6 +20,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 
 import com.dynamicconn.Conn1;
@@ -32,7 +33,6 @@ public class BookingReport extends JFrame {
 
     private final Color NAVY = new Color(24, 35, 56);
     private final Color BLUE = new Color(45, 99, 200);
-    private final Color LIGHT_BLUE = new Color(235, 242, 255);
     private final Color BACKGROUND = new Color(245, 247, 250);
     private final Color WHITE = Color.WHITE;
     private final Color TEXT = new Color(45, 55, 72);
@@ -47,8 +47,6 @@ public class BookingReport extends JFrame {
 
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(BACKGROUND);
-
-        // ================= HEADER =================
 
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setBackground(NAVY);
@@ -66,34 +64,39 @@ public class BookingReport extends JFrame {
 
         JPanel titlePanel = new JPanel();
         titlePanel.setOpaque(false);
-        titlePanel.setLayout(new javax.swing.BoxLayout(
-                titlePanel, javax.swing.BoxLayout.Y_AXIS));
+        titlePanel.setLayout(
+                new javax.swing.BoxLayout(
+                        titlePanel,
+                        javax.swing.BoxLayout.Y_AXIS));
 
         titlePanel.add(titleLabel);
         titlePanel.add(subTitle);
 
         headerPanel.add(titlePanel, BorderLayout.WEST);
-
         mainPanel.add(headerPanel, BorderLayout.NORTH);
 
-        // ================= CONTENT =================
+        JPanel contentPanel = new JPanel(
+                new BorderLayout(20, 20));
 
-        JPanel contentPanel = new JPanel(new BorderLayout(20, 20));
         contentPanel.setBackground(BACKGROUND);
         contentPanel.setBorder(
-                BorderFactory.createEmptyBorder(25, 30, 25, 30));
+                BorderFactory.createEmptyBorder(
+                        25, 30, 25, 30));
 
-        // ================= SEARCH PANEL =================
-
-        JPanel searchPanel = new JPanel(new FlowLayout(
-                FlowLayout.LEFT, 12, 12));
+        JPanel searchPanel = new JPanel(
+                new FlowLayout(
+                        FlowLayout.LEFT,
+                        12,
+                        12));
 
         searchPanel.setBackground(WHITE);
+
         searchPanel.setBorder(
                 BorderFactory.createCompoundBorder(
                         BorderFactory.createLineBorder(
                                 new Color(225, 228, 235)),
-                        BorderFactory.createEmptyBorder(8, 12, 8, 12)));
+                        BorderFactory.createEmptyBorder(
+                                8, 12, 8, 12)));
 
         JLabel searchLabel = new JLabel("Customer ID:");
         searchLabel.setFont(
@@ -105,16 +108,20 @@ public class BookingReport extends JFrame {
                 new Font("Segoe UI", Font.PLAIN, 14));
 
         JButton searchButton = createButton(
-                "Search", BLUE);
+                "Search",
+                BLUE);
 
         JButton refreshButton = createButton(
-                "Refresh", new Color(39, 174, 96));
+                "Refresh",
+                new Color(39, 174, 96));
 
         JButton clearButton = createButton(
-                "Clear", GRAY);
+                "Clear",
+                GRAY);
 
         JButton backButton = createButton(
-                "Back", NAVY);
+                "Back",
+                NAVY);
 
         searchPanel.add(searchLabel);
         searchPanel.add(searchField);
@@ -123,9 +130,9 @@ public class BookingReport extends JFrame {
         searchPanel.add(clearButton);
         searchPanel.add(backButton);
 
-        contentPanel.add(searchPanel, BorderLayout.NORTH);
-
-        // ================= TABLE =================
+        contentPanel.add(
+                searchPanel,
+                BorderLayout.NORTH);
 
         String[] columns = {
                 "Booking ID",
@@ -143,7 +150,9 @@ public class BookingReport extends JFrame {
         model = new DefaultTableModel(columns, 0) {
 
             @Override
-            public boolean isCellEditable(int row, int column) {
+            public boolean isCellEditable(
+                    int row,
+                    int column) {
                 return false;
             }
         };
@@ -169,32 +178,43 @@ public class BookingReport extends JFrame {
 
         bookingTable.setShowVerticalLines(false);
 
-        JScrollPane scrollPane = new JScrollPane(bookingTable);
+        JScrollPane scrollPane =
+                new JScrollPane(bookingTable);
+
         scrollPane.setBorder(
                 BorderFactory.createLineBorder(
                         new Color(220, 224, 230)));
 
-        contentPanel.add(scrollPane, BorderLayout.CENTER);
+        contentPanel.add(
+                scrollPane,
+                BorderLayout.CENTER);
 
-        // ================= BOTTOM =================
+        JPanel bottomPanel =
+                new JPanel(new BorderLayout());
 
-        JPanel bottomPanel = new JPanel(new BorderLayout());
         bottomPanel.setBackground(BACKGROUND);
 
-        JLabel countLabel = new JLabel("Total Bookings: 0");
+        JLabel countLabel =
+                new JLabel("Total Bookings: 0");
+
         countLabel.setFont(
                 new Font("Segoe UI", Font.BOLD, 15));
+
         countLabel.setForeground(TEXT);
 
-        bottomPanel.add(countLabel, BorderLayout.WEST);
+        bottomPanel.add(
+                countLabel,
+                BorderLayout.WEST);
 
-        contentPanel.add(bottomPanel, BorderLayout.SOUTH);
+        contentPanel.add(
+                bottomPanel,
+                BorderLayout.SOUTH);
 
-        mainPanel.add(contentPanel, BorderLayout.CENTER);
+        mainPanel.add(
+                contentPanel,
+                BorderLayout.CENTER);
 
         add(mainPanel);
-
-        // ================= BUTTON ACTIONS =================
 
         refreshButton.addActionListener(e -> {
             loadBookings();
@@ -212,20 +232,19 @@ public class BookingReport extends JFrame {
             updateCount(countLabel);
         });
 
-        backButton.addActionListener(e -> {
-            dispose();
+        backButton.addActionListener(e -> dispose());
+
+        searchField.addActionListener(e -> {
+            searchBookings();
+            updateCount(countLabel);
         });
 
-        // Load data when window opens
         loadBookings();
         updateCount(countLabel);
 
+        setLocationRelativeTo(null);
         setVisible(true);
     }
-
-    // =========================================================
-    // LOAD ALL BOOKINGS
-    // =========================================================
 
     private void loadBookings() {
 
@@ -249,38 +268,39 @@ public class BookingReport extends JFrame {
                 + "ON b.room_id = r.room_id "
                 + "ORDER BY b.booking_id DESC";
 
-        try (
-                Connection con = Conn1.mycon();
-                PreparedStatement ps = con.prepareStatement(sql);
-                ResultSet rs = ps.executeQuery()
-        ) {
+        try (Connection con = Conn1.mycon()) {
 
-            while (rs.next()) {
+            if (con == null) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Database connection failed.",
+                        "Database Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
-                Object[] row = {
+            try (PreparedStatement ps =
+                         con.prepareStatement(sql);
+                 ResultSet rs =
+                         ps.executeQuery()) {
 
-                        rs.getInt("booking_id"),
+                while (rs.next()) {
 
-                        rs.getInt("customer_id"),
+                    Object[] row = {
+                            rs.getInt("booking_id"),
+                            rs.getInt("customer_id"),
+                            rs.getString("customer_name"),
+                            rs.getInt("room_id"),
+                            rs.getString("room_number"),
+                            rs.getString("room_type"),
+                            rs.getDouble("price_per_day"),
+                            rs.getDate("check_in"),
+                            rs.getDate("check_out"),
+                            rs.getString("status")
+                    };
 
-                        rs.getString("customer_name"),
-
-                        rs.getInt("room_id"),
-
-                        rs.getString("room_number"),
-
-                        rs.getString("room_type"),
-
-                        rs.getDouble("price_per_day"),
-
-                        rs.getDate("check_in"),
-
-                        rs.getDate("check_out"),
-
-                        rs.getString("status")
-                };
-
-                model.addRow(row);
+                    model.addRow(row);
+                }
             }
 
         } catch (Exception e) {
@@ -294,13 +314,10 @@ public class BookingReport extends JFrame {
         }
     }
 
-    // =========================================================
-    // SEARCH BOOKINGS BY CUSTOMER ID
-    // =========================================================
-
     private void searchBookings() {
 
-        String customerId = searchField.getText().trim();
+        String customerId =
+                searchField.getText().trim();
 
         if (customerId.isEmpty()) {
 
@@ -338,44 +355,45 @@ public class BookingReport extends JFrame {
                     + "WHERE b.customer_id = ? "
                     + "ORDER BY b.booking_id DESC";
 
-            try (
-                    Connection con = Conn1.mycon();
-                    PreparedStatement ps =
-                            con.prepareStatement(sql)
-            ) {
+            try (Connection con = Conn1.mycon()) {
 
-                ps.setInt(1, id);
+                if (con == null) {
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "Database connection failed.",
+                            "Database Error",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
 
-                try (ResultSet rs = ps.executeQuery()) {
+                try (PreparedStatement ps =
+                             con.prepareStatement(sql)) {
 
-                    while (rs.next()) {
+                    ps.setInt(1, id);
 
-                        Object[] row = {
+                    try (ResultSet rs =
+                                 ps.executeQuery()) {
 
-                                rs.getInt("booking_id"),
+                        while (rs.next()) {
 
-                                rs.getInt("customer_id"),
+                            Object[] row = {
+                                    rs.getInt("booking_id"),
+                                    rs.getInt("customer_id"),
+                                    rs.getString("customer_name"),
+                                    rs.getInt("room_id"),
+                                    rs.getString("room_number"),
+                                    rs.getString("room_type"),
+                                    rs.getDouble("price_per_day"),
+                                    rs.getDate("check_in"),
+                                    rs.getDate("check_out"),
+                                    rs.getString("status")
+                            };
 
-                                rs.getString("customer_name"),
-
-                                rs.getInt("room_id"),
-
-                                rs.getString("room_number"),
-
-                                rs.getString("room_type"),
-
-                                rs.getDouble("price_per_day"),
-
-                                rs.getDate("check_in"),
-
-                                rs.getDate("check_out"),
-
-                                rs.getString("status")
-                        };
-
-                        model.addRow(row);
+                            model.addRow(row);
+                        }
                     }
                 }
+
             }
 
             if (model.getRowCount() == 0) {
@@ -407,20 +425,12 @@ public class BookingReport extends JFrame {
         }
     }
 
-    // =========================================================
-    // UPDATE COUNT
-    // =========================================================
-
     private void updateCount(JLabel countLabel) {
 
         countLabel.setText(
                 "Total Bookings: "
                 + model.getRowCount());
     }
-
-    // =========================================================
-    // CREATE BUTTON
-    // =========================================================
 
     private JButton createButton(
             String text,
@@ -433,7 +443,6 @@ public class BookingReport extends JFrame {
 
         button.setForeground(WHITE);
         button.setBackground(background);
-
         button.setFocusPainted(false);
         button.setBorderPainted(false);
 
@@ -443,12 +452,9 @@ public class BookingReport extends JFrame {
         return button;
     }
 
-    // =========================================================
-    // MAIN
-    // =========================================================
-
     public static void main(String[] args) {
 
-        new BookingReport();
+        SwingUtilities.invokeLater(
+                () -> new BookingReport());
     }
 }
